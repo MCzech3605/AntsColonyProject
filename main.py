@@ -1,10 +1,10 @@
-def mfmc_ant(G):  # todo implement maximal flow minimal cost function as ant algorithm
+def mfmc_ant(G, C, m):  # todo implement maximal flow minimal cost function as ant algorithm
     flow = 0
     cost = 0
     return flow, cost
 
 
-def mfmc_classic(G):  # todo implement maximal flow minimal cost function in standard way
+def mfmc_classic(G, C):  # todo implement maximal flow minimal cost function in standard way
     flow = 0
     cost = 0
     return flow, cost
@@ -18,7 +18,9 @@ def compare(a_flow, a_cost, c_flow, c_cost):
 
 
 if __name__ == '__main__':
-    G = []
-    ant = mfmc_ant(G)
-    classic = mfmc_classic(G)
+    G = []                  # graph of flow
+    C = []                  # graph of costs
+    m = 10
+    ant = mfmc_ant(G, C, m)
+    classic = mfmc_classic(G, C)
     compare(ant[0], ant[1], classic[0], classic[1])
