@@ -26,8 +26,8 @@ def compare(a1_flow, a2_flow, a3_flow, c_flow):
 
 
 if __name__ == '__main__':
-    G = []                  # graph of flow
-    m = 10                  # number of ants
+    G = []    # graph of flow, where G[0] is source node and G[i] = (a, b) means that i and a are connected with flow b
+    m = 10    # number of ants
     ant = [mf_ant1(G, m), mf_ant2(G, m), mf_ant3(G, m)]
     classic = mf_classic(G)
     compare(ant[0], ant[1], ant[2], classic)
