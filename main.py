@@ -1,26 +1,33 @@
-def mfmc_ant(G, C, m):  # todo implement maximal flow minimal cost function as ant algorithm
+def mf_ant1(G, m):  # todo implement maximal flow function as ant algorithm (Ivan)
     flow = 0
-    cost = 0
-    return flow, cost
+    return flow
 
 
-def mfmc_classic(G, C):  # todo implement maximal flow minimal cost function in standard way
+def mf_ant2(G, m):  # todo implement maximal flow function as ant algorithm (Jakub)
     flow = 0
-    cost = 0
-    return flow, cost
+    return flow
 
 
-def compare(a_flow, a_cost, c_flow, c_cost):
-    print(f"Maximal flow from ant algorithm:      {a_flow}")
+def mf_ant3(G, m):  # todo implement maximal flow function as ant algorithm (Miron)
+    flow = 0
+    return flow
+
+
+def mf_classic(G):  # todo implement maximal flow minimal cost function in standard way
+    flow = 0
+    return flow
+
+
+def compare(a1_flow, a2_flow, a3_flow, c_flow):
+    print(f"Maximal flow from ant 1 algorithm:    {a1_flow}")
+    print(f"Maximal flow from ant 2 algorithm:    {a2_flow}")
+    print(f"Maximal flow from ant 3 algorithm:    {a3_flow}")
     print(f"Maximal flow from classic algorithm:  {c_flow}")
-    print(f"Minimal cost from ant algorithm:      {a_cost}")
-    print(f"Minimal cost from classic algorithm:  {c_cost}")
 
 
 if __name__ == '__main__':
     G = []                  # graph of flow
-    C = []                  # graph of costs
-    m = 10
-    ant = mfmc_ant(G, C, m)
-    classic = mfmc_classic(G, C)
-    compare(ant[0], ant[1], classic[0], classic[1])
+    m = 10                  # number of ants
+    ant = [mf_ant1(G, m), mf_ant2(G, m), mf_ant3(G, m)]
+    classic = mf_classic(G)
+    compare(ant[0], ant[1], ant[2], classic)
