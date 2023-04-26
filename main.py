@@ -39,7 +39,7 @@ def mf_ant3(G, m):  # todo implement maximal flow function as ant algorithm (Mir
             ind = 0
             while prob_sum < rand and ind < len(tau_table):
                 ind += 1
-                prob_sum += tau_table[ind]
+                prob_sum += tau_table[i][ind]
             chosen_vals.append(ind)
         flow = calc_max_flow(chosen_vals, G)
         for i in range(len(tau_table)):
