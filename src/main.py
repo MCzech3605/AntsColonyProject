@@ -1,9 +1,89 @@
 from copy import deepcopy
 from random import randint
 from src.graph import Graph, Edge, graph_from_raw_adjacency_list
+from random import random
 
 def mf_ant1(G, m):  # todo implement maximal flow function as ant algorithm (Ivan)
+    ro = 0.8
+    Q = 10
+    N = len(G)
     flow = 0
+    ant_arcs = []
+    fixed_arcs = []
+    for j in range(len(G[0])):
+        ant_arcs.append((0, G[0][j][0], G[0][j][1]))
+    for i in range(1, N-1):
+        maxD = 0
+        chosen_arc = 0
+        for j in range(len(G[i])):
+            if G[i][j][1] > maxD:
+                maxD = G[i][j][1]
+                chosen_arc = j
+        fixed_arcs.append((i, G[i][chosen_arc][0], G[i][chosen_arc][1]))
+        for j in range(len(G[i])):
+            if j != chosen_arc:
+                ant_arcs.append((i, G[i][j][0], G[i][j][1]))
+    print(ant_arcs)
+    print(fixed_arcs)
+    pher = [[1.0 for j in range(ant_arcs[i][2] + 1)] for i in range(len(ant_arcs))]
+
+    def get_ant_fl(pher, i):
+        prob = random()
+        sum_prob = 0.0
+        sum_pher = 0.0
+        for j in range(len(pher[i])):
+            sum_pher += pher[i][j]
+        for j in range(len(pher[i])):
+            pher_prob = pher[i][j] / sum_pher
+
+            if sum_prob <= prob and prob <= sum_prob + pher_prob:
+                return j
+            sum_prob += pher_prob
+
+    #def satisfy(ant_fl, fl_in, ):
+
+    for _ in range(m):
+
+        while True:
+            fl_in = [0.0 for i in range(N)]
+            fl_out = [0.0 for i in range(N)]
+            ant_fl = []
+
+            for i in range(len(ant_arcs)):
+                fl = get_ant_fl(pher, i)
+                fl_in[ant_arcs[i][1]] += fl
+                fl_out[ant_arcs[i][0]] += fl
+                ant_fl.append(fl)
+            # print(fl_in)
+            # print(fl_out)
+            restart = False
+            for i in range(len(fixed_arcs)):
+                # print(fl_out[fixed_arcs[i][0]] - fl_in[fixed_arcs[i][0]])
+                if fl_in[fixed_arcs[i][0]] - fl_out[fixed_arcs[i][0]] < 0 or fl_in[fixed_arcs[i][0]] - fl_out[fixed_arcs[i][0]] > fixed_arcs[i][2]:
+                    restart = True
+                    break
+                fl = fl_in[fixed_arcs[i][0]] - fl_out[fixed_arcs[i][0]]
+                fl_in[fixed_arcs[i][1]] += fl
+                fl_out[fixed_arcs[i][0]] += fl
+                ant_fl.append(fl)
+
+            if restart or fl_out[0] == 0:
+                continue
+
+            # print("Res:")
+            # print(fl_out)
+            # print(fl_in)
+            # print(ant_fl)
+
+            result = fl_out[0]
+            flow = max(flow, result)
+            for i in range(len(pher)):
+                for j in range(len(pher[i])):
+                    pher[i][j] *= ro
+                    if ant_fl[i] == j:
+                        pher[i][j] += (result / Q)
+            #print(pher)
+            break
     return flow
 
 
@@ -139,6 +219,7 @@ if __name__ == '__main__':
     G[7].extend([(8, 4)])                   # example graph filled
     # print(G)
     # print(graph_from_raw_adjacency_list(G))
+    F = G
 
     G = Graph(9, [Edge(0, 1, 5), Edge(0, 2, 7), Edge(0, 3, 3), Edge(1, 5, 2), Edge(1, 6, 5), Edge(2, 4, 4),
                   Edge(3, 4, 3), Edge(3, 7, 8), Edge(4, 6, 11), Edge(4, 7, 10), Edge(5, 6, 3), Edge(5, 4, 3),
@@ -149,7 +230,7 @@ if __name__ == '__main__':
     # g2 = Graph(3, [Edge(0, 1, 3), Edge(0, 2, 2)])
     # G = g.adjacency_list_raw()
     # print(g.adjacency_list_raw)
-    ant = [mf_ant1(G, m), mf_ant2(G, m), mf_ant3(G, m), mf_classic(G)]
+    ant = [mf_ant1(F, m), mf_ant2(G, m), mf_ant3(G, m), mf_classic(G)]
     # classic = mf_classic(G)
     compare(ant[0], ant[1], ant[2], ant[3])
     # print(mf_classic(g1))
