@@ -234,3 +234,6 @@ if __name__ == '__main__':
     # classic = mf_classic(G)
     compare(ant[0], ant[1], ant[2], ant[3])
     # print(mf_classic(g1))
+    # todo dołożyć więcej grafów
+    # todo dokument i prezentacja
+    # todo znaleźć literaturę
