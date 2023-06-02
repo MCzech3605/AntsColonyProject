@@ -3,7 +3,8 @@ from random import randint
 from src.graph import Graph, Edge, graph_from_raw_adjacency_list
 from random import random
 
-def mf_ant1(G, m):  # todo implement maximal flow function as ant algorithm (Ivan)
+
+def mf_ant1(G, m):  # implementation of maximal flow function as ant algorithm (Ivan)
     ro = 0.8
     Q = 10
     N = len(G)
@@ -87,12 +88,7 @@ def mf_ant1(G, m):  # todo implement maximal flow function as ant algorithm (Iva
     return flow
 
 
-def mf_ant2(G, m):  # todo implement maximal flow function as ant algorithm (Jakub)
-    flow = 0
-    return flow
-
-
-def mf_ant3(g: Graph, m):  # todo implement maximal flow function as ant algorithm (Miron)
+def mf_ant2(g: Graph, m):  # implementation of maximal flow function as ant algorithm (Miron)
     G = g.adjacency_list_raw()
     tau = [[1.0 for j in range(G[0][i][1]+1)] for i in range(len(G[0]))]
     Q = 10.0
@@ -134,7 +130,7 @@ def mf_ant3(g: Graph, m):  # todo implement maximal flow function as ant algorit
     return flow
 
 
-def mf_classic(g: Graph | list[list[tuple[int, int]]]):  # todo implement maximal flow minimal cost function in standard way
+def mf_classic(g: Graph | list[list[tuple[int, int]]]):
     def DFS(C, Cmat, s, t):
         def DFS_find(C, v, t, parents, visited):
             if v == t:
@@ -197,11 +193,9 @@ def mf_classic(g: Graph | list[list[tuple[int, int]]]):  # todo implement maxima
     return total_flow
 
 
-
-def compare(a1_flow, a2_flow, a3_flow, c_flow):
+def compare(a1_flow, a2_flow, c_flow):
     print(f"Maximal flow from ant 1 algorithm:    {a1_flow}")
     print(f"Maximal flow from ant 2 algorithm:    {a2_flow}")
-    print(f"Maximal flow from ant 3 algorithm:    {a3_flow}")
     print(f"Maximal flow from classic algorithm:  {c_flow}")
 
 
@@ -230,9 +224,22 @@ if __name__ == '__main__':
     # g2 = Graph(3, [Edge(0, 1, 3), Edge(0, 2, 2)])
     # G = g.adjacency_list_raw()
     # print(g.adjacency_list_raw)
-    ant = [mf_ant1(F, m), mf_ant2(G, m), mf_ant3(G, m), mf_classic(G)]
+    ant = [mf_ant1(F, m), mf_ant2(G, m), mf_classic(G)]
     # classic = mf_classic(G)
-    compare(ant[0], ant[1], ant[2], ant[3])
+    compare(ant[0], ant[1], ant[2])
+
+    G2 = Graph(23, [Edge(0, 5, 10), Edge(0, 1, 12), Edge(0, 2, 15), Edge(0, 3, 17), Edge(0, 4, 4),
+                    Edge(5, 1, 6), Edge(5, 6, 3), Edge(1, 7, 30), Edge(2, 8, 9), Edge(2, 9, 9), Edge(3, 9, 8),
+                    Edge(3, 4, 8), Edge(4, 10, 21), Edge(6, 11, 5), Edge(7, 6, 2), Edge(7, 12, 16), Edge(8, 12, 11),
+                    Edge(8, 13, 4), Edge(9, 14, 14), Edge(10, 9, 18), Edge(10, 15, 7), Edge(11, 16, 8), Edge(12, 16, 4),
+                    Edge(12, 17, 9), Edge(12, 13, 9), Edge(13, 17, 13), Edge(13, 18, 13), Edge(14, 18, 7),
+                    Edge(14, 10, 11), Edge(15, 19, 7), Edge(16, 20, 12), Edge(17, 20, 30), Edge(18, 20, 12),
+                    Edge(18, 21, 10), Edge(19, 18, 2), Edge(19, 21, 7), Edge(20, 22, 100), Edge(21, 22, 10)])
+
+    print("Bigger graph:")
+    m = 30
+    ant2 = [mf_ant1(G2.adjacency_list_raw(True), m), mf_ant2(G2, m), mf_classic(G2)]
+    compare(ant2[0], ant2[1], ant2[2])
     # print(mf_classic(g1))
     # todo dołożyć więcej grafów
     # todo dokument i prezentacja
