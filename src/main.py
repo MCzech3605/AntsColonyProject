@@ -3,6 +3,8 @@ from random import randint
 from src.graph import Graph, Edge, graph_from_raw_adjacency_list
 from random import random
 from sortedcollections import OrderedSet
+from time import time
+import matplotlib.pyplot as plt
 
 def mf_ant1(G, m):  # implementation of maximal flow function as ant algorithm (Ivan)
     ro = 0.8
@@ -190,7 +192,7 @@ def mf_ant1(G, m):  # implementation of maximal flow function as ant algorithm (
 def mf_ant2(g: Graph, m):  # implementation of maximal flow function as ant algorithm (Miron)
     G = g.adjacency_list_raw()
     tau = [[1.0 for j in range(G[0][i][1]+1)] for i in range(len(G[0]))]
-    Q = 10.0
+    Q = 30.0
     ro = 0.8
 
     def calc_max_flow(chosen_vals: list, G: list):
@@ -326,6 +328,45 @@ if __name__ == '__main__':
     ant = [mf_ant1(F, m), mf_ant2(G, m), mf_classic(G)]
     # classic = mf_classic(G)
     compare(ant[0], ant[1], ant[2])
+    time_tab = []
+    ans_tab = []
+    for i in range(3):
+        start = time()
+        num = 1000
+        ans = 0
+        if i == 0:
+            num = 100
+            for _ in range(num):
+                ans += mf_ant1(F, m)
+        elif i == 1:
+            for _ in range(num):
+                ans += mf_ant2(G, m)
+        elif i == 2:
+            for _ in range(num):
+                ans += mf_classic(G)
+        stop = time()
+        time_tab.append(1000*(stop-start)/num)
+        ans_tab.append(ans/num)
+    print("average times:", time_tab)
+
+    fig, ax = plt.subplots()
+    ax.grid()
+    ax.bar([1, 2, 3], time_tab, tick_label=["Alg1", "Alg2", "Classic"])
+    ax.set_title("Average time for three algorithms")
+    ax.set_ylabel("Time [ms]")
+    fig.show()
+    fig.savefig("Time_lin.png")
+    ax.set_yscale('log')
+    fig.show()
+    fig.savefig("Time_log.png")
+
+    fig, ax = plt.subplots()
+    ax.grid()
+    ax.bar([1, 2, 3], ans_tab, tick_label=["Alg1", "Alg2", "Classic"])
+    ax.set_title("Average flow reached for three algorithms")
+    ax.set_ylabel("Flow [units]")
+    fig.show()
+    fig.savefig("Flow_lin.png")
 
     G2 = Graph(23, [Edge(0, 5, 10), Edge(0, 1, 12), Edge(0, 2, 15), Edge(0, 3, 17), Edge(0, 4, 4),
                     Edge(5, 1, 6), Edge(5, 6, 3), Edge(1, 7, 30), Edge(2, 8, 9), Edge(2, 9, 9), Edge(3, 9, 8),
@@ -337,7 +378,8 @@ if __name__ == '__main__':
 
     print("Bigger graph:")
     m = 30
-    ant2 = [mf_ant1(G2.adjacency_list_raw(True), m), mf_ant2(G2, m), mf_classic(G2)]
+    # ant2 = [mf_ant1(G2.adjacency_list_raw(True), m), mf_ant2(G2, m), mf_classic(G2)]
+    ant2 = [0, mf_ant2(G2, m), mf_classic(G2)]
     compare(ant2[0], ant2[1], ant2[2])
     print(mf_classic(g1))
     # todo dołożyć więcej grafów
