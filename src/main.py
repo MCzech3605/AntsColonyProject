@@ -392,11 +392,5 @@ def main():
     plot_results(time_tab, ans_tab, 3, 50)
 
 
-
-    # todo dołożyć więcej grafów
-    # todo dokument i prezentacja
-    # todo znaleźć literaturę
-
-
 if __name__ == '__main__':
     main()
