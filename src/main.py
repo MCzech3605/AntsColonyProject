@@ -1,12 +1,18 @@
 from copy import deepcopy
 from random import randint
-from src.graph import Graph, Edge, graph_from_raw_adjacency_list
+from src.graph import Graph, graph_from_raw_adjacency_list
 from random import random
 from sortedcollections import OrderedSet
+from collections import deque
 from time import time
 import matplotlib.pyplot as plt
+from kuba_algorithm import mf_ant3
+from graph_builder import create_dag
+import numpy as np
 
-def mf_ant1(G, m):  # implementation of maximal flow function as ant algorithm (Ivan)
+
+def mf_ant1(G, m = 10):  # implementation of maximal flow function as ant algorithm (Ivan)
+    G = G.adjacency_list_raw()
     ro = 0.8
     Q = 10
     N = len(G)
@@ -189,7 +195,7 @@ def mf_ant1(G, m):  # implementation of maximal flow function as ant algorithm (
     #return min(flow, maxans)
 
 
-def mf_ant2(g: Graph, m):  # implementation of maximal flow function as ant algorithm (Miron)
+def mf_ant2(g: Graph, m: int = 10):  # implementation of maximal flow function as ant algorithm (Miron)
     G = g.adjacency_list_raw()
     tau = [[1.0 for j in range(G[0][i][1]+1)] for i in range(len(G[0]))]
     Q = 30.0
@@ -231,157 +237,166 @@ def mf_ant2(g: Graph, m):  # implementation of maximal flow function as ant algo
     return flow
 
 
-def mf_classic(g: Graph | list[list[tuple[int, int]]]):
-    def DFS(C, Cmat, s, t):
-        def DFS_find(C, v, t, parents, visited):
-            if v == t:
-                return True
-            for u in sorted(C[v], key=lambda x: Cmat[v][x]):
-                if not visited[u]:
+def mf_classic(g: Graph | list[list[tuple[int, int]]], *args, v: bool = False):
+    def DFS_find(s, t, parents, visited):
+        queue = deque()
+        queue.append(s)
+        # stack = [s]
+        while queue:
+            v = queue.popleft()
+            # for u in sorted(C[v], key=lambda x: Cmat[v][x]):
+            for u, cap in enumerate(Cmat[v]):
+                if not visited[u] and cap > 0:
                     visited[u] = True
                     parents[u] = v
-                    if DFS_find(C, u, t, parents, visited):
-                        return True
-            return False
+                    queue.append(u)
+
+        return visited[t]
+
+    def DFS(C, Cmat, s, t):
 
         parents = [-1 for _ in C]
         visited = [False for _ in C]
         visited[s] = True
-        if DFS_find(C, s, t, parents, visited):
-            # print(parents)
-            max_flow = float('inf')
-            current = t
-            while current != s:
-                if Cmat[parents[current]][current] < max_flow:
-                    max_flow = Cmat[parents[current]][current]
-                current = parents[current]
-
-            current = t
-            while current != s:
-                Cmat[parents[current]][current] -= max_flow
-                if Cmat[parents[current]][current] == 0:
-                    C[parents[current]].remove(current)
-                if Cmat[current][parents[current]] == 0:
-                    C[current].append(parents[current])
-                Cmat[current][parents[current]] += max_flow
-
-                # flow_mat[parents[current]][current] += max_flow
-                current = parents[current]
-            return max_flow
-        else:
-            # print(C)
+        if not DFS_find(s, t, parents, visited):
             return 0
 
-    # C = [[] for _ in G.adjacency_list]
-    # Cmat = [[0 for _ in G.adjacency_list] for _ in G.adjacency_list]
+        max_flow = float('inf')
+        current = t
+        while current != s:
+            if Cmat[parents[current]][current] < max_flow:
+                max_flow = Cmat[parents[current]][current]
+            current = parents[current]
 
-    # for edge in G.edge_list:
-    #     C[edge[0]].append(edge[1])
-    #     Cmat[edge[0]][edge[1]] = edge[2]
+        current = t
+        while current != s:
+            Cmat[parents[current]][current] -= max_flow
+            # if Cmat[parents[current]][current] == 0:
+            #     C[parents[current]].remove(current)
+            # if Cmat[current][parents[current]] == 0:
+            #     C[current].append(parents[current])
+            Cmat[current][parents[current]] += max_flow
+
+            # flow_mat[parents[current]][current] += max_flow
+            current = parents[current]
+
+        return max_flow
+
     C = g.adjacency_list_raw(include_capacity=False)
     Cmat = g.adjacency_matrix_raw()
-
-
-    # print(C)
-    # print(Cmat)
 
     total_flow = 0
     iteration_flow = 1
     while iteration_flow > 0:
         iteration_flow = DFS(C, Cmat, 0, len(C) - 1)
         total_flow += iteration_flow
-
+    if v:
+        print(np.array(Cmat))
     return total_flow
 
 
-def compare(a1_flow, a2_flow, c_flow):
+def compare(a1_flow, a2_flow, a3_flow, c_flow):
     print(f"Maximal flow from ant 1 algorithm:    {a1_flow}")
     print(f"Maximal flow from ant 2 algorithm:    {a2_flow}")
+    print(f"Maximal flow from ant 3 algorithm:    {a3_flow}")
     print(f"Maximal flow from classic algorithm:  {c_flow}")
 
 
-if __name__ == '__main__':
-    G = [[] for _ in range(9)]    # graph of flow, where G[0] is source node and G[i] = (a, b) means that i and a are
-                                  # connected with flow b and G[len(G)-1] is the destination
-    m = 10                        # number of ants
-    G[0].extend([(1, 5), (2, 7), (3, 3)])
-    G[1].extend([(5, 2), (6, 5)])
-    G[2].extend([(4, 4)])
-    G[3].extend([(4, 2), (7, 8)])
-    G[4].extend([(6, 11), (7, 10)])
-    G[5].extend([(6, 3), (4, 3)])
-    G[6].extend([(8, 6)])
-    G[7].extend([(8, 4)])                   # example graph filled
-    # print(G)
-    # print(graph_from_raw_adjacency_list(G))
-    F = G
-
-    G = Graph(9, [Edge(0, 1, 5), Edge(0, 2, 7), Edge(0, 3, 3), Edge(1, 5, 2), Edge(1, 6, 5), Edge(2, 4, 4),
-                  Edge(3, 4, 3), Edge(3, 7, 8), Edge(4, 6, 11), Edge(4, 7, 10), Edge(5, 6, 3), Edge(5, 4, 3),
-                  Edge(6, 8, 6), Edge(7, 8, 4)])
-
-    g1 = Graph(5, [Edge(0, 1, 3), Edge(0, 2, 2), Edge(2, 3, 1), Edge(1, 3, 3), Edge(1, 4, 2), Edge(2, 4, 20)])
-    # print(g1)
-    # g2 = Graph(3, [Edge(0, 1, 3), Edge(0, 2, 2)])
-    # G = g.adjacency_list_raw()
-    # print(g.adjacency_list_raw)
-    ant = [mf_ant1(F, m), mf_ant2(G, m), mf_classic(G)]
-    # classic = mf_classic(G)
-    compare(ant[0], ant[1], ant[2])
-    time_tab = []
-    ans_tab = []
-    for i in range(3):
-        start = time()
-        num = 1000
-        ans = 0
-        if i == 0:
-            num = 100
-            for _ in range(num):
-                ans += mf_ant1(F, m)
-        elif i == 1:
-            for _ in range(num):
-                ans += mf_ant2(G, m)
-        elif i == 2:
-            for _ in range(num):
-                ans += mf_classic(G)
-        stop = time()
-        time_tab.append(1000*(stop-start)/num)
-        ans_tab.append(ans/num)
-    print("average times:", time_tab)
-
+def plot_results(time_tab, ans_tab, number_of_algorithms, graph_size):
     fig, ax = plt.subplots()
     ax.grid()
-    ax.bar([1, 2, 3], time_tab, tick_label=["Alg1", "Alg2", "Classic"])
-    ax.set_title("Average time for three algorithms")
+    if number_of_algorithms == 3:
+        ax.bar([1, 2, 3], time_tab, tick_label=["Alg2", "Alg3", "Classic"])
+    else:
+        ax.bar([1, 2, 3, 4], time_tab, tick_label=["Alg1", "Alg2", "Alg3", "Classic"])
+    ax.set_title("Average time taken")
     ax.set_ylabel("Time [ms]")
     fig.show()
-    fig.savefig("Time_lin.png")
+    fig.savefig(f"Time_lin_{number_of_algorithms}_{graph_size}.png")
     ax.set_yscale('log')
     fig.show()
-    fig.savefig("Time_log.png")
+    fig.savefig(f"Time_log_{number_of_algorithms}_{graph_size}.png")
 
     fig, ax = plt.subplots()
     ax.grid()
-    ax.bar([1, 2, 3], ans_tab, tick_label=["Alg1", "Alg2", "Classic"])
-    ax.set_title("Average flow reached for three algorithms")
+    if number_of_algorithms == 3:
+        ax.bar([1, 2, 3], ans_tab, tick_label=["Alg2", "Alg3", "Classic"])
+    else:
+        ax.bar([1, 2, 3, 4], ans_tab, tick_label=["Alg1", "Alg2", "Alg3", "Classic"])
+    ax.set_title("Average flow reached")
     ax.set_ylabel("Flow [units]")
     fig.show()
-    fig.savefig("Flow_lin.png")
+    fig.savefig(f"Flow_lin_{number_of_algorithms}_{graph_size}.png")
 
-    G2 = Graph(23, [Edge(0, 5, 10), Edge(0, 1, 12), Edge(0, 2, 15), Edge(0, 3, 17), Edge(0, 4, 4),
-                    Edge(5, 1, 6), Edge(5, 6, 3), Edge(1, 7, 30), Edge(2, 8, 9), Edge(2, 9, 9), Edge(3, 9, 8),
-                    Edge(3, 4, 8), Edge(4, 10, 21), Edge(6, 11, 5), Edge(7, 6, 2), Edge(7, 12, 16), Edge(8, 12, 11),
-                    Edge(8, 13, 4), Edge(9, 14, 14), Edge(10, 9, 18), Edge(10, 15, 7), Edge(11, 16, 8), Edge(12, 16, 4),
-                    Edge(12, 17, 9), Edge(12, 13, 9), Edge(13, 17, 13), Edge(13, 18, 13), Edge(14, 18, 7),
-                    Edge(14, 10, 11), Edge(15, 19, 7), Edge(16, 20, 12), Edge(17, 20, 30), Edge(18, 20, 12),
-                    Edge(18, 21, 10), Edge(19, 18, 2), Edge(19, 21, 7), Edge(20, 22, 100), Edge(21, 22, 10)])
 
-    print("Bigger graph:")
-    m = 30
-    # ant2 = [mf_ant1(G2.adjacency_list_raw(True), m), mf_ant2(G2, m), mf_classic(G2)]
-    ant2 = [0, mf_ant2(G2, m), mf_classic(G2)]
-    compare(ant2[0], ant2[1], ant2[2])
-    print(mf_classic(g1))
+def run_trials(generated_graphs: int,
+               trials_per_graph: int,
+               algorithm_iterations: int,
+               graph_size: int,
+               graph_density: float,
+               graph_capacity_range: tuple[int, int],
+               use_alg1: bool = False) -> tuple[list[list], list[list]]:
+
+    algorithms = (mf_ant2, mf_ant3, mf_classic)
+    time_tab = [[], [], []]
+    ans_tab = [[], [], []]
+    if use_alg1:
+        algorithms = (mf_ant1, mf_ant2, mf_ant3, mf_classic)
+        time_tab.append([])
+        ans_tab.append([])
+    for _ in range(generated_graphs):
+        G = create_dag(graph_size, density=graph_density, capacity_range=graph_capacity_range)
+        for i, algorithm in enumerate(algorithms):
+            start = time()
+            ans = 0
+            for _ in range(trials_per_graph):
+                ans += algorithm(G, algorithm_iterations)
+            stop = time()
+            time_tab[i].append(1000 * (stop - start) / trials_per_graph)
+            ans_tab[i].append(ans / trials_per_graph)
+
+    time_tab = [sum(measurements) / len(measurements) for measurements in time_tab]
+    ans_tab = [sum(answers) / len(answers) for answers in ans_tab]
+
+    return time_tab, ans_tab
+
+
+def plot_accuracy_by_iterations(trials: int,
+                                iterations: int,
+                                graph_size: int,
+                                graph_density: float,
+                                graph_capacity_range: tuple[int, int]) -> None:
+    graph = create_dag(graph_size, graph_density, graph_capacity_range)
+    histories = [(mf_ant3(graph, iterations, show_history=True)) for _ in range(trials)]
+
+    history_avg = [sum(histories[t][i] for t in range(trials)) / trials for i in range(iterations)]
+    optimal = mf_classic(graph)
+    plt.plot(history_avg, label="Ant")
+    plt.plot([optimal for _ in range(iterations)], label="Ford-Fulkerson")
+    plt.xlabel("Iterations")
+    plt.ylabel("Maximum flow found")
+    plt.title("Accuracy of an ant algorithm by iterations")
+    plt.legend()
+    plt.savefig("convergence.png")
+    plt.show()
+
+
+def main():
+    plot_accuracy_by_iterations(20, 200, 50, 0.2, (3, 25))
+    exit(0)
+
+    time_tab, ans_tab = run_trials(20, 5, 200, 10, 0.3, (2, 10))
+    plot_results(time_tab, ans_tab, 3, 10)
+
+    time_tab, ans_tab = run_trials(20, 5, 200, 50, 0.2, (3, 25))
+    plot_results(time_tab, ans_tab, 3, 50)
+
+
+
     # todo dołożyć więcej grafów
     # todo dokument i prezentacja
     # todo znaleźć literaturę
+
+
+if __name__ == '__main__':
+    main()

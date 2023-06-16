@@ -39,7 +39,7 @@ class Graph:
         return [(edge.start, edge.end, edge.capacity) for edge in self.edge_list]
 
     def adjacency_matrix_raw(self) -> list[list[int]]:
-        return [[edge.capacity if edge is not None else -1 for edge in row] for row in self.adjacency_matrix]
+        return [[edge.capacity if edge is not None else 0 for edge in row] for row in self.adjacency_matrix]
 
     def add_node(self) -> None:
         self.size += 1
