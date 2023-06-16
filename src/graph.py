@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from collections import namedtuple
 from typing import Optional
 
@@ -29,11 +30,11 @@ class Graph:
 
         self.edge_list = edges
 
-    def adjacency_list_raw(self, include_capacity: Optional[bool] = True) -> list[list[tuple[int, int]]]:
-        if include_capacity:
-            return [[(edge.end, edge.capacity) for edge in node_neighbours] for node_neighbours in self.adjacency_list]
-        else:
-            return [[edge.end for edge in node_neighbours] for node_neighbours in self.adjacency_list]
+    def adjacency_list_raw(self) -> list[list[tuple[int, int]]]:
+        return [[(edge.end, edge.capacity) for edge in node_neighbours] for node_neighbours in self.adjacency_list]
+
+    def adjacency_list_raw_no_capacity(self) -> list[list[int]]:
+        return [[edge.end for edge in node_neighbours] for node_neighbours in self.adjacency_list]
 
     def edge_list_raw(self) -> list[tuple[int, int, int]]:
         return [(edge.start, edge.end, edge.capacity) for edge in self.edge_list]

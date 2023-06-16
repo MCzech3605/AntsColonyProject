@@ -1,5 +1,9 @@
 from __future__ import annotations
+
+from typing import Any
+
 import numpy as np
+
 from src.graph import Graph
 
 evaporation_rate: float = 0.9
@@ -8,14 +12,14 @@ exploration_factor: float = 0.2
 
 
 def mf_ant3(graph: Graph, iterations: int = 20, ants: int = 15,
-            v: bool = False, show_history: bool = False) -> int | list[int]:
+            v: bool = False, show_history: bool = False) -> Any:
     pheromones_this_iteration: np.ndarray
     pheromones_next_iteration: np.ndarray
     adjacency_list: list[np.ndarray]
     base_capacities: np.ndarray
 
     pheromones_this_iteration = np.ones((graph.size, graph.size))
-    adjacency_list = [np.array(l, dtype=int) for l in graph.adjacency_list_raw(include_capacity=False)]
+    adjacency_list = [np.array(l, dtype=int) for l in graph.adjacency_list_raw_no_capacity()]
 
     max_flow = 0
     flows_history = []
@@ -33,7 +37,7 @@ def mf_ant3(graph: Graph, iterations: int = 20, ants: int = 15,
 
 
 def iteration(graph: Graph, adjacency_list: list[np.ndarray], ants: int,
-              pheromones_this_iteration: np.ndarray, v: bool = False) -> (int, np.ndarray):
+              pheromones_this_iteration: np.ndarray, v: bool = False) -> tuple[int, np.ndarray]:
     pheromones_next_iteration: np.ndarray = np.copy(pheromones_this_iteration)
     capacities_left: np.ndarray = np.array([[edge.capacity if edge is not None else 0.0 for edge in row] for row in graph.adjacency_matrix], dtype=int)
 
